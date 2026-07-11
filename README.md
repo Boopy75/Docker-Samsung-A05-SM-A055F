@@ -1,4 +1,4 @@
-**This is absolutely the work of Claude, with my contribution limited to eye-rolling, swearing, and directing**
+# **This is absolutely the work of Claude, with my contribution limited to eye-rolling, swearing, and directing**
 
 # Samsung Galaxy A05 → Headless Docker Server
 
