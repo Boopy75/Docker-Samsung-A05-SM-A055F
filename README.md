@@ -1,3 +1,5 @@
+** This is absolutely the work of Claude, with my contribution limited to eye-rolling, swearing, and directing **
+
 # Samsung Galaxy A05 → Headless Docker Server
 
 Turn a Samsung Galaxy A05 (SM‑A055F, MediaTek Helio G85) into a reboot‑proof, SSH‑accessible Docker + Compose host running on stock Android 15 with a custom‑configured GKI kernel
@@ -17,7 +19,8 @@ No custom ROM, no firmware downgrade, no brick risk, and fully revertible to sto
 | **Built against** | firmware `A055FXXSHDZF1` (binary 8) → kernel string `6.6.89-android15-8-abA055FXXSHDZF1-4k` |
 | **Result** | rooted (Magisk) + AVB‑off, Termux/OpenSSH, Debian chroot, **Docker 26.1.5 + Compose v2**, host‑mode networking, boot autostart, ~70 % battery cap |
 
-**Why a custom kernel?** Docker needs Linux namespaces/IPC that Google's GKI base ships **disabled** (`CONFIG_PID_NS`, `CONFIG_IPC_NS`, `CONFIG_POSIX_MQUEUE`). These can't be enabled from userspace — they must be compiled into the kernel `Image`. Everything else rides on top.
+**Why a custom kernel?**
+Docker needs Linux namespaces/IPC that Google's GKI base ships **disabled** (`CONFIG_PID_NS`, `CONFIG_IPC_NS`, `CONFIG_POSIX_MQUEUE`). These can't be enabled from userspace — they must be compiled into the kernel `Image`. Everything else rides on top.
 
 **Two decisions that make it work on a phone:**
 - Rebuild only the **kernel `Image`**; keep every stock vendor partition → WiFi/BT/etc. keep working, and the kernel version string is kept **byte‑identical** to stock so signed vendor `.ko` modules still load.

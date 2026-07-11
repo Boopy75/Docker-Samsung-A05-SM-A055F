@@ -1,0 +1,14 @@
+# Example Compose project for the A05 Docker host.
+# IMPORTANT: services must use `network_mode: host` — this device has no bridge networking
+# (see README footnote [D]). Each service binds its ports directly on the phone's IP.
+services:
+  web:
+    image: nginx
+    network_mode: host          # nginx serves on <phone-ip>:80
+    restart: unless-stopped
+
+  # a second service just binds a different host port
+  # cache:
+  #   image: redis
+  #   network_mode: host        # redis on <phone-ip>:6379
+  #   restart: unless-stopped
