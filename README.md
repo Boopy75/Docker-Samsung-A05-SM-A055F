@@ -1,9 +1,6 @@
-# **This is absolutely the work of Claude, with my contribution limited to eye-rolling, swearing, and directing**
-
 # Samsung Galaxy A05 → Headless Docker Server
 
-Turn a Samsung Galaxy A05 (SM‑A055F, MediaTek Helio G85) into a reboot‑proof, SSH‑accessible Docker + Compose host running on stock Android 15 with a custom‑configured GKI kernel
-No custom ROM, no firmware downgrade, no brick risk, and fully revertible to stock.
+Turn a Samsung Galaxy A05 (SM‑A055F, MediaTek Helio G85) into a **reboot‑proof, SSH‑accessible Docker + Compose host** running on **stock Android 15** with a custom‑configured GKI kernel — **no custom ROM, no firmware downgrade, no brick risk, and fully revertible to stock.**
 
 > **Status:** working. Containers run, pull from Docker Hub, and reach the internet. Docker + Compose auto‑start on boot; you `ssh` in and use `docker` / `docker compose` directly.
 
@@ -19,8 +16,7 @@ No custom ROM, no firmware downgrade, no brick risk, and fully revertible to sto
 | **Built against** | firmware `A055FXXSHDZF1` (binary 8) → kernel string `6.6.89-android15-8-abA055FXXSHDZF1-4k` |
 | **Result** | rooted (Magisk) + AVB‑off, Termux/OpenSSH, Debian chroot, **Docker 26.1.5 + Compose v2**, host‑mode networking, boot autostart, ~70 % battery cap |
 
-**Why a custom kernel?**
-Docker needs Linux namespaces/IPC that Google's GKI base ships **disabled** (`CONFIG_PID_NS`, `CONFIG_IPC_NS`, `CONFIG_POSIX_MQUEUE`). These can't be enabled from userspace — they must be compiled into the kernel `Image`. Everything else rides on top.
+**Why a custom kernel?** Docker needs Linux namespaces/IPC that Google's GKI base ships **disabled** (`CONFIG_PID_NS`, `CONFIG_IPC_NS`, `CONFIG_POSIX_MQUEUE`). These can't be enabled from userspace — they must be compiled into the kernel `Image`. Everything else rides on top.
 
 **Two decisions that make it work on a phone:**
 - Rebuild only the **kernel `Image`**; keep every stock vendor partition → WiFi/BT/etc. keep working, and the kernel version string is kept **byte‑identical** to stock so signed vendor `.ko` modules still load.
@@ -215,6 +211,18 @@ docker compose up -d                                            # see examples/c
 ```
 
 **Networking is host‑mode only** — containers use Android's own network stack (full outbound internet + DNS; services bind ports on the phone's IP). No `-p` remapping, no isolated bridge networks. Compose services need `network_mode: host` (see `examples/compose.yaml`).
+
+### DNS
+
+Set your resolvers once via the `DNS1` / `DNS2` / `DNS_SEARCH` variables at the top of `device/start-docker.sh` **and** `device/install-docker.sh` (use the same values in both; leave `DNS_SEARCH` blank if you have no internal search domain). They are pinned in **three** places:
+
+| Consumer | Where | Set by |
+|---|---|---|
+| **Termux** | `…/usr/etc/resolv.conf` | `device/start-docker.sh` (rewritten every boot) |
+| **Chroot** (apt, etc.) | `<rootfs>/etc/resolv.conf` | `device/start-docker.sh` + `install-docker.sh` |
+| **Docker** containers | `<rootfs>/etc/docker/daemon.json` → `"dns"` / `"dns-search"` | `device/install-docker.sh` |
+
+> **Gotcha:** set Docker's DNS in `daemon.json` **or** with `dockerd --dns`, **never both** — dockerd refuses to start if the same directive appears in a flag *and* the file. Host‑network containers ignore the chroot's `resolv.conf`, so `daemon.json` is what actually gives them these resolvers.
 
 ---
 
